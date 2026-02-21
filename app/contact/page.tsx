@@ -3,7 +3,12 @@
 
 import NavBar from "../../components/NavBar";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import emailjs from "@emailjs/browser";
 
+
+
+// Animation variants
 const container = {
   hidden: {},
   visible: {
@@ -30,15 +35,58 @@ const fadeScale = {
     transition: { duration: 0.7, ease: "easeOut" },
   },
 };
+export default function ContactPage() {
 
-export default function Contact() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("");
+    setLoading(true);
+
+    try {
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        {
+          from_name: form.name,
+          from_email: form.email,
+          message: form.message,
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+      );
+
+      setStatus("Message sent successfully!");
+      setForm({ name: "", email: "", message: "" });
+
+    } catch (error) {
+      console.error(error);
+      setStatus("Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <NavBar />
 
-      {/* ================= HERO ================= */}
-      <section className="relative h-[65vh] flex items-center justify-center text-white overflow-hidden">
-        <img
+      {/* Keep all your existing UI sections here */}
+
+  {/* ================= HERO ================= */}
+         <section className="relative h-[65vh] flex items-center justify-center text-white overflow-hidden">
+       <img
           src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80"
           className="absolute inset-0 w-full h-full object-cover scale-105"
           alt="Business discussion"
@@ -67,7 +115,7 @@ export default function Contact() {
         </motion.div>
       </section>
 
-      {/* ================= INQUIRIES ================= */}
+       {/* ================= INQUIRIES ================= */}
       <section className="relative py-28 bg-gray-50 overflow-hidden">
         {/* Background accent */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-red-100 rounded-full blur-3xl opacity-30" />
@@ -104,7 +152,7 @@ export default function Contact() {
                   <span className="text-3xl font-bold text-red-500">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <div className="flex-1 h-[1px] bg-gray-200 group-hover:bg-red-300 transition-colors" />
+                  <div className="flex-1 h-px bg-gray-200 group-hover:bg-red-300 transition-colors" />
                 </div>
 
                 <p className="text-gray-700 text-lg leading-relaxed">
@@ -126,11 +174,10 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* ================= CONTACT PANEL ================= */}
       <section className="py-28 bg-white">
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-start">
 
-          {/* Left Content */}
+           {/* Left Content */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -147,7 +194,7 @@ export default function Contact() {
                   Email
                 </p>
                 <p className="text-red-500 font-medium text-xl mt-1">
-                  your-email@example.com
+                  arhamdevsinn@gmail.com
                 </p>
               </div>
 
@@ -156,7 +203,7 @@ export default function Contact() {
                   Location
                 </p>
                 <p className="text-gray-800 font-medium text-xl mt-1">
-                  Your City, Country
+                  Lahore, Pakistan
                 </p>
               </div>
             </div>
@@ -174,37 +221,57 @@ export default function Contact() {
             viewport={{ once: true }}
             variants={fadeScale}
             className="relative bg-white p-12 rounded-3xl shadow-2xl text-black border border-gray-100 space-y-6"
+            onSubmit={handleSubmit}
           >
-            {/* subtle glow */}
+          {/* subtle glow */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-100 rounded-full blur-3xl opacity-40" />
 
             <input
               type="text"
+              name="name"
               placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
               className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              required
             />
 
             <input
               type="email"
+              name="email"
               placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
               className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              required
             />
 
             <textarea
               rows={5}
+              name="message"
               placeholder="Your Message"
+              value={form.message}
+              onChange={handleChange}
               className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              required
             />
+      {/* Contact Form Button Update */}
+      <button
+        type="submit"
+        disabled={loading || !form.name || !form.email || !form.message}
+        className="w-full bg-red-500 text-white py-4 rounded-xl font-semibold transition-all duration-300 hover:bg-red-600 hover:shadow-lg hover:-translate-y-1 disabled:opacity-60"
+      >
+        {loading ? "Sending..." : "Send Inquiry"}
+      </button>
 
-            <button
-              type="submit"
-              className="w-full bg-red-500 text-white py-4 rounded-xl font-semibold transition-all duration-300 hover:bg-red-600 hover:shadow-lg hover:-translate-y-1"
-            >
-              Send Inquiry
-            </button>
-          </motion.form>
-        </div>
-      </section>
+      {status && (
+        <p className="mt-4 text-center text-sm text-green-600">
+          {status}
+        </p>
+      )}
+            </motion.form>
+                     </div>
+     </section>
     </>
   );
 }
